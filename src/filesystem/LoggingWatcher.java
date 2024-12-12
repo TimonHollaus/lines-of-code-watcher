@@ -17,6 +17,8 @@ public class LoggingWatcher extends Watcher {
         // wenn der Watcher bestehen bleiben (und das Programm endlos weiterlaufen) soll,
         // kann ein Watcher auch ohne try-with-resources verwendet werden (trotz Warnung):
         Watcher watcher = new LoggingWatcher(new File("./watched"));
+        Anzeige anzeige = new Anzeige();
+        watcher.attach(anzeige);
     }
 
     public LoggingWatcher(File dir) {
@@ -25,6 +27,6 @@ public class LoggingWatcher extends Watcher {
 
     @Override
     public void handleChange(File file, boolean exists) {
-        System.out.println(file + " was " + (exists ? "created or modified" : "deleted"));
+        notifyObservers(file,exists);
     }
 }
