@@ -20,11 +20,10 @@ public class Anzeige implements Observer {
     public void update(File file, boolean exists) {
         if (exists && !files.contains(file)) {
             this.files.add(file);
-            anzeigen();
         } else {
             this.files.remove(file);
-            anzeigen();
         }
+        anzeigen();
     }
 
     public String getFileEnding(File file) {
@@ -47,7 +46,7 @@ public class Anzeige implements Observer {
 
         // Gib die Inhalte der Map aus
         for (Map.Entry<String, Integer> entry : fileEndingCount.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
+            System.out.println(entry.getKey() + " " + entry.getValue());
         }
     }
 }
