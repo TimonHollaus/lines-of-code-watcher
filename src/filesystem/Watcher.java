@@ -42,7 +42,13 @@ public abstract class Watcher implements Runnable, Closeable {
     @Override
     public void run() {
         try(Stream<Path> files = Files.list(path)) {
-            files.forEach(p -> this.handleChange(p.toFile(), true));
+            files.forEach(p -> {
+                try {
+                    this.handleChange(p.toFile(), true);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -59,14 +65,18 @@ public abstract class Watcher implements Runnable, Closeable {
             assert key == this.key;
             for (WatchEvent<?> event : key.pollEvents()) {
                 Path p = path.resolve((Path) event.context());
-                handleChange(p.toFile(), Files.exists(p));
+                try {
+                    handleChange(p.toFile(), Files.exists(p));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
             }
             key.reset();
         }
     }
 
-    public void notifyObservers(File file, boolean exists) {
+    public void notifyObservers(File file, boolean exists) throws IOException {
         for (Observer observer : beobachter) {
             observer.update(file, exists);
         }
@@ -80,5 +90,5 @@ public abstract class Watcher implements Runnable, Closeable {
         beobachter.remove(observer);
     }
 
-    public abstract void handleChange(File file, boolean exists);
+    public abstract void handleChange(File file, boolean exists) throws IOException;
 }

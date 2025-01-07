@@ -1,10 +1,8 @@
 package filesystem;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.sql.SQLOutput;
+import java.util.*;
 
 public class Anzeige implements Observer {
 
@@ -17,12 +15,15 @@ public class Anzeige implements Observer {
     }
 
     @Override
-    public void update(File file, boolean exists) {
+    public void update(File file, boolean exists) throws IOException {
         if (exists && !files.contains(file)) {
+            // Datei existiert und ist noch nicht in der Liste, also hinzufügen
             this.files.add(file);
-        } else {
+        } else if (!exists) {
+            // Datei existiert nicht mehr, also entfernen
             this.files.remove(file);
         }
+        // Ausgabe aktualisieren
         anzeigen();
     }
 
@@ -33,21 +34,74 @@ public class Anzeige implements Observer {
         return parts[parts.length - 1];
     }
 
-    private void anzeigen() {
-        System.out.println("\n\nDateien");
-        System.out.println("-----------------------------------");
+    private void anzeigen() throws IOException {
+        System.out.println("\n\n        Dateien  Zeilen  Davon Code  Davon Leerzeilen");
+        System.out.println("---------------------------------------------------");
 
-        // Aktualisiere die Map basierend auf der aktuellen Liste von Dateien
         fileEndingCount.clear();
+        Map<String, int[]> fileStats = new LinkedHashMap<>(); // Für Statistik pro Dateityp
+
         for (File file : files) {
             String fileEnding = getFileEnding(file);
+            int[] counts = countLines(file); // Zeilen zählen
+
+            // Zeilenzähler in Statistik einfügen
+            fileStats.merge(fileEnding, counts, (oldCounts, newCounts) -> new int[]{
+                    oldCounts[0] + newCounts[0],
+                    oldCounts[1] + newCounts[1],
+                    oldCounts[2] + newCounts[2]
+            });
+
             fileEndingCount.put(fileEnding, fileEndingCount.getOrDefault(fileEnding, 0) + 1);
         }
 
-        // Gib die Inhalte der Map aus
-        for (Map.Entry<String, Integer> entry : fileEndingCount.entrySet()) {
-            System.out.println(entry.getKey() + " " + entry.getValue());
+        // Ausgabe der Ergebnisse
+        for (Map.Entry<String, int[]> entry : fileStats.entrySet()) {
+            String fileEnding = entry.getKey();
+            int fileCount = fileEndingCount.getOrDefault(fileEnding, 0);
+            int[] counts = entry.getValue();
+
+            String output = auffüllen(entry.getKey(),10) +
+                            auffüllen(String.valueOf(fileCount),10) +
+                            auffüllen(String.valueOf(counts[0]), 10) +
+                            auffüllen(String.valueOf(counts[1]), 10) +
+                            auffüllen(String.valueOf(counts[2]), 10);
+            System.out.println(output);
         }
+    }
+
+    private String auffüllen(String text,int length){
+        String back = text;
+        while(back.length() < length){
+            back += " ";
+        }
+        return back;
+    }
+
+    public static int[] countLines(File file) throws FileNotFoundException {
+        if (!file.exists()) {
+            throw new FileNotFoundException("Die Datei " + file.getAbsolutePath() + " existiert nicht.");
+        }
+        int totalLines = 0;
+        int codeLines = 0;
+        int emptyLines = 0;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                totalLines++;
+                line = line.trim();
+                if (line.isEmpty()) {
+                    emptyLines++;
+                } else{
+                    codeLines++;
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new int[]{totalLines, codeLines, emptyLines};
     }
 }
 

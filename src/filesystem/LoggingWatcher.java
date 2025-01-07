@@ -26,7 +26,14 @@ public class LoggingWatcher extends Watcher {
     }
 
     @Override
-    public void handleChange(File file, boolean exists) {
-        notifyObservers(file,exists);
+    public void handleChange(File file, boolean exists) throws IOException {
+        if (file.exists()) {
+            try {
+                Thread.sleep(1000); // Warte 100ms, damit die Datei stabil ist
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            notifyObservers(file, exists);
+        }
     }
 }
