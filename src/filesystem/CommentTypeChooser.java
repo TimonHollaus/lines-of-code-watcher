@@ -2,7 +2,7 @@ package filesystem;
 
 public class CommentTypeChooser{
     public static CommentChecker getcheckertype(String fileExtension) {
-        switch (fileExtension.toLowerCase()) {
+        switch (fileExtension) {
             case "java":
             case "js":
                 return new JavaCommentChecker();
