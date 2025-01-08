@@ -64,7 +64,7 @@ public class Anzeige implements Observer {
             String output = auffüllen(entry.getKey(),10) +
                             auffüllen(String.valueOf(fileCount),10) +
                             auffüllen(String.valueOf(counts[0]), 10) +
-                            auffüllen(String.valueOf(counts[1]), 10) +
+                            auffüllen(String.valueOf(counts[1]), 13) +
                             auffüllen(String.valueOf(counts[2]), 10);
             System.out.println(output);
         }

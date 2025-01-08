@@ -27,9 +27,9 @@ public class LoggingWatcher extends Watcher {
 
     @Override
     public void handleChange(File file, boolean exists) throws IOException {
-        if (file.exists()) {
+        if (file.exists() && !file.getName().endsWith("~")) {
             try {
-                Thread.sleep(1000); // Warte 100ms, damit die Datei stabil ist
+                Thread.sleep(100); // Warte 100ms, damit die Datei stabil ist
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
